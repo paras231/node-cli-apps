@@ -6,7 +6,7 @@ import chalk from "chalk";
 import inquirer from "inquirer";
 import path from "path";
 import fs from "fs";
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from "url";
 
 program.version("1.0.0").description("My Node CLI");
 
@@ -15,18 +15,18 @@ program.action(() => {
     .prompt([
       {
         type: "input",
-        name: "name",
-        message: "What's your name?",
-      },
-      {
-        type: "confirm",
-        name: "ask",
-        message: "Do you want to continue?",
-      },
-      {
-        type: "input",
         name: "projectName",
         message: "Write your project name.",
+      },
+      {
+        type: "list",
+        name: "projectOptions",
+        message: "Please choose Project Type",
+        choices: [
+          "Install with Mongodb Setup",
+          "Install with mysql and Sequlize Setup",
+          "Install with PostgreSQL and Sequlize Setup",
+        ],
       },
       {
         type: "confirm",
@@ -35,17 +35,26 @@ program.action(() => {
       },
     ])
     .then((answers) => {
-    //  let __dirname = path.resolve(path.dirname(''));
-    const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
-const __dirname = path.dirname(__filename); // get the name of the directory
+      //  let __dirname = path.resolve(path.dirname(''));
+      const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+      const __dirname = path.dirname(__filename); // get the name of the directory
       console.log(answers);
-      console.log(chalk.green(`Hey there, ${answers.name}!`)); // prints all the answers in a object
+      console.log(answers.projectOptions);
       const projectPath = path.join(process.cwd(), answers.projectName);
       if (!fs.existsSync(projectPath)) {
         fs.mkdirSync(projectPath);
         //  copy templates
-        const templateDir = path.join(__dirname, "./templates");
-        fs.copyFileSync(templateDir, projectPath);
+        // choose project setup options
+        let tempDir = "";
+        if (answers.projectOptions === "Install with Mongodb Setup") {
+          tempDir = "./all-templates/with-mongodb-setup";
+        } else if (
+          answers.projectOptions === "Install with mysql and Sequlize Setup"
+        ) {
+          tempDir = "./all-templates/with-mysql-setup";
+        }
+        const templateDir = path.join(__dirname, tempDir);
+        fs.cpSync(templateDir, projectPath, { recursive: true });
         const files = fs.readdirSync(projectPath);
         files.forEach((file) => {
           const filePath = path.join(projectPath, file);
